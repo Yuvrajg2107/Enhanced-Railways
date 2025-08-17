@@ -29,7 +29,7 @@ const upload = multer({
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000", "https://enhanced-railways-1.onrender.com/"],
+    origin: true,
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
     credentials: true
@@ -202,83 +202,24 @@ app.get("/api/ic-stats", async (req, res) => {
   }
 });
 
-// app.post("/api/login", async (req, res) => {
-//   const { username, password } = req.body;
-
-//   try {
-//     // Supabase equivalent of the MySQL query
-//     const { data: users, error } = await supabase
-//       .from('users')
-//       .select('*')
-//       .eq('username', username.trim())
-//       .eq('password', password);
-
-//     // console.log(data)
-//     if (error) throw error;
-
-//     if (users && users.length > 0) {
-//       const user = users[0];
-
-//       // Create JWT token (same as original)
-//       const token = jwt.sign(
-//         {
-//           id: user.id,
-//           username: user.username,
-//           role: user.role,
-//           designation: user.designation,
-//           firstName: user.firstname,
-//           lastName: user.lastname,
-//           email: user.email
-//         },
-//         SECRET,
-//         { expiresIn: "1d" }
-//       );
-
-//       // Send as httpOnly cookie (same as original)
-//       res.cookie("token", token, {
-//         httpOnly: true,
-//         secure: false, // keeping false as per your original
-//         sameSite: "lax",
-//         maxAge: 24 * 60 * 60 * 1000 // 1 day
-//       });
-//       // console.log('success')
-//       return res.json({ success: true });
-//     } else {
-//       f
-//       return res.json({ success: false, message: "Invalid username or password" });
-//     }
-//   } catch (error) {
-//     // console.error("Login error:", error);
-//     res.status(500).json({ success: false, message: "Error connecting to server" });
-//   }
-// });
-
-// app.post("/api/logout", (req, res) => {
-//   res.clearCookie("token", {
-//     httpOnly: true,
-//     secure: false,
-//     sameSite: "lax"
-//   });
-//   res.json({ success: true });
-// });
-
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Supabase equivalent of the MySQL query 
+    // Supabase equivalent of the MySQL query
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
       .eq('username', username.trim())
       .eq('password', password);
 
+    // console.log(data)
     if (error) throw error;
 
     if (users && users.length > 0) {
       const user = users[0];
 
-      // Create JWT token
+      // Create JWT token (same as original)
       const token = jwt.sign(
         {
           id: user.id,
@@ -293,19 +234,21 @@ app.post("/api/login", async (req, res) => {
         { expiresIn: "1d" }
       );
 
-      // Send as httpOnly cookie with updated options
+      // Send as httpOnly cookie (same as original)
       res.cookie("token", token, {
         httpOnly: true,
-        secure: true, // Updated to true for HTTPS (Render deployment)
-        sameSite: "none", // Updated to 'none' for cross-origin support
+        secure: false, // keeping false as per your original
+        sameSite: "lax",
         maxAge: 24 * 60 * 60 * 1000 // 1 day
       });
-
+      // console.log('success')
       return res.json({ success: true });
     } else {
+      f
       return res.json({ success: false, message: "Invalid username or password" });
     }
   } catch (error) {
+    // console.error("Login error:", error);
     res.status(500).json({ success: false, message: "Error connecting to server" });
   }
 });
@@ -313,8 +256,8 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true, // Updated to match login's secure setting
-    sameSite: "none" // Updated to match login's sameSite setting
+    secure: false,
+    sameSite: "lax"
   });
   res.json({ success: true });
 });
@@ -403,23 +346,8 @@ const allowedTables = [
 
 // Add this route to server.js
 
-// function authenticateUser(req, res, next) {
-//   const token = req.cookies.token;
-//   if (!token) {
-//     return res.status(401).json({ message: "Not authenticated" });
-//   }
-
-//   try {
-//     const decoded = jwt.verify(token, SECRET);
-//     req.user = decoded; // { id, username, role }
-//     next();
-//   } catch (err) {
-//     res.status(403).json({ message: "Invalid token" });
-//   }
-// }
 function authenticateUser(req, res, next) {
   const token = req.cookies.token;
-  console.log("Token received:", token); // Add this for debugging
   if (!token) {
     return res.status(401).json({ message: "Not authenticated" });
   }
@@ -427,13 +355,12 @@ function authenticateUser(req, res, next) {
   try {
     const decoded = jwt.verify(token, SECRET);
     req.user = decoded; // { id, username, role }
-    console.log("Decoded user:", req.user); // Add this for debugging
     next();
   } catch (err) {
-    console.log("Token verification error:", err.message); // Add this for debugging
     res.status(403).json({ message: "Invalid token" });
   }
 }
+
 
 app.get("/api/summary/:type", async (req, res) => {
   const type = (req.params.type || "").toLowerCase();
@@ -501,16 +428,6 @@ app.get("/api/summary/:type", async (req, res) => {
   }
 });
 
-// app.get("/api/get-user-and-role", authenticateUser, (req, res) => {
-//   res.json({
-//     username: req.user.username,
-//     role: req.user.role,
-//     designation: req.user.designation,
-//     email: req.user.email,
-//     firstName: req.user.firstName,
-//     lastName: req.user.lastName
-//   });
-// });
 app.get("/api/get-user-and-role", authenticateUser, (req, res) => {
   res.json({
     username: req.user.username,
