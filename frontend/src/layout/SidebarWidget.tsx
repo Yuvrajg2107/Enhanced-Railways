@@ -5,7 +5,7 @@ export default function SidebarWidget() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3002/api/logout", {
+      await fetch("https://enhanced-railways.onrender.com/api/logout", {
         method: "POST",
         credentials: "include", // important to clear the cookie
       });

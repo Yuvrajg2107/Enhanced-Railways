@@ -17,7 +17,7 @@ function ForecastVsActualChart() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:3002/api/forecast-vs-actual');
+        const response = await fetch('https://enhanced-railways.onrender.com/api/forecast-vs-actual');
         if (!response.ok) throw new Error('Network response was not ok');
 
         const data = await response.json();

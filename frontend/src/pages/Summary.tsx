@@ -30,7 +30,7 @@ const Summary = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`http://localhost:3002/api/summary/${type}`);
+      const res = await axios.get(`https://enhanced-railways.onrender.com/api/summary/${type}`);
       if (!res.data.success) throw new Error("Failed to fetch summary");
 
       const formattedSections = res.data.data.map((section: SummaryData) => {

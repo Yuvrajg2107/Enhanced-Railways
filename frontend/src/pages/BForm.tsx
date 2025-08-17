@@ -39,7 +39,7 @@ const BForm = () => {
   const fetchData = async (route: string) => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:3002/api/route/${normalizeRoute(route)}`);
+      const res = await axios.get(`https://enhanced-railways.onrender.com/api/route/${normalizeRoute(route)}`);
       if (res.data.success) {
         const formatted = res.data.data.map((row: any, idx: number) => {
           const newRow: TableRow = { id: idx + 1 };

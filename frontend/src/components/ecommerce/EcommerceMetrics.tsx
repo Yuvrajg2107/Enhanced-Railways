@@ -27,7 +27,7 @@ export default function EcommerceMetrics() {
   React.useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('http://localhost:3002/api/dashboard-stats');
+        const response = await fetch('https://enhanced-railways.onrender.com/api/dashboard-stats');
         const data = await response.json();
 
         if (data.success) {

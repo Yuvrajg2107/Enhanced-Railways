@@ -36,7 +36,7 @@ export default function NotificationDropdown() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:3002/api/upload", {
+      const response = await fetch("https://enhanced-railways.onrender.com/api/upload", {
         method: "POST",
         body: formData,
       });
