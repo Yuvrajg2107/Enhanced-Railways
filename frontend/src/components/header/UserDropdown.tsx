@@ -17,7 +17,7 @@ export default function UserDropdown() {
 
   const handleLogout = async () => {
     try {
-      await fetch("https://enhanced-railways.onrender.com/api/logout", {
+      await fetch("http://localhost:3002/api/logout", {
         method: "POST",
         credentials: "include", // important to clear the cookie
       });
@@ -33,7 +33,7 @@ export default function UserDropdown() {
   };
 
   useEffect(() => {
-    axios.get("https://enhanced-railways.onrender.com/api/get-user-and-role", {
+    axios.get("http://localhost:3002/api/get-user-and-role", {
       withCredentials: true
     })
       .then(response => {
@@ -157,3 +157,93 @@ export default function UserDropdown() {
     </div>
   );
 }
+
+// import React, { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import { toast } from "react-toastify";
+
+// interface PersonalInformation {
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+// }
+
+// const UserDropdown: React.FC = () => {
+//   const [personalInformation, setPersonalInformation] = useState<PersonalInformation | null>(null);
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const fetchUserData = async () => {
+//       try {
+//         const token = localStorage.getItem("token"); // ✅ read stored token
+
+//         if (!token) {
+//           console.warn("No token found. Redirecting to signin...");
+//           navigate("/signin");
+//           return;
+//         }
+
+//         const response = await axios.get(
+//           "https://enhanced-railways.onrender.com/api/get-user-and-role",
+//           {
+//             headers: {
+//               Authorization: `Bearer ${token}`, // ✅ send token in headers
+//             },
+//             withCredentials: true, // just in case cookies are also used
+//           }
+//         );
+
+//         setPersonalInformation({
+//           firstName: response.data.firstName,
+//           lastName: response.data.lastName,
+//           email: response.data.email,
+//         });
+//       } catch (error) {
+//         console.error("Error fetching user data:", error);
+//         toast.error("Session expired. Please login again.");
+//         navigate("/signin");
+//       }
+//     };
+
+//     fetchUserData();
+//   }, [navigate]);
+
+//   const handleLogout = async () => {
+//     try {
+//       await fetch("https://enhanced-railways.onrender.com/api/logout", {
+//         method: "POST",
+//         credentials: "include",
+//       });
+
+//       localStorage.removeItem("token"); // ✅ clear token
+//       toast.success("Logged out successfully!");
+//       navigate("/signin");
+//     } catch (error) {
+//       console.error("Logout failed:", error);
+//       toast.error("Logout failed. Try again!");
+//     }
+//   };
+
+//   return (
+//     <div className="relative">
+//       {personalInformation ? (
+//         <div className="flex items-center space-x-2">
+//           <span>
+//             {personalInformation.firstName} {personalInformation.lastName}
+//           </span>
+//           <button
+//             onClick={handleLogout}
+//             className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+//           >
+//             Logout
+//           </button>
+//         </div>
+//       ) : (
+//         <span>Loading...</span>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default UserDropdown;
