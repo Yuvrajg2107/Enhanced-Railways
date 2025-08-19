@@ -30,6 +30,8 @@
     "express": "^5.1.0",
     "flatpickr": "^4.6.13",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "multer": "^2.0.2",
     "mysql2": "^3.14.3",
     "postgres": "^3.4.7",

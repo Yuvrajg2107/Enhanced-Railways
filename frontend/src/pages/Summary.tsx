@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable"; // ✅ direct import
 
 interface SummaryData {
   table: string;
@@ -30,7 +32,9 @@ const Summary = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`https://enhanced-railways.onrender.com/api/summary/${type}`);
+      const res = await axios.get(
+        `https://enhanced-railways.onrender.com/api/summary/${type}`
+      );
       if (!res.data.success) throw new Error("Failed to fetch summary");
 
       const formattedSections = res.data.data.map((section: SummaryData) => {
@@ -53,6 +57,48 @@ const Summary = () => {
     }
   };
 
+  const downloadPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    doc.setFontSize(16);
+    doc.text("Master Summary", 40, 40);
+
+    sections.forEach((section, index) => {
+      const headers =
+        section.rows.length > 0
+          ? Object.keys(section.rows[0]).filter((col) => col !== "id")
+          : [];
+
+      const tableData = section.rows.map((row) =>
+        headers.map((header) => row[header] || "-")
+      );
+
+      autoTable(doc, {
+        head: [headers.map((header) => header.replace(/_/g, " "))],
+        body: tableData,
+        startY: index === 0 ? 60 : (doc as any).lastAutoTable.finalY + 40,
+        theme: "grid",
+        margin: { left: 40, right: 40 },
+        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
+        styles: {
+          fontSize: 9,
+          cellPadding: 4,
+          overflow: "linebreak",
+          halign: "left",
+          valign: "middle",
+        },
+      });
+
+      doc.setFontSize(12);
+      doc.text(
+        section.table.replace(/_/g, " → ").toUpperCase(),
+        40,
+        (doc as any).lastAutoTable.finalY + 25
+      );
+    });
+
+    doc.save("master_summary.pdf");
+  };
+
   useEffect(() => {
     fetchSummary(viewType);
   }, [viewType]);
@@ -70,33 +116,43 @@ const Summary = () => {
           Summary Viewer
         </h3>
 
+        {/* Filter Buttons */}
         <div className="mb-4 flex flex-wrap gap-2">
+          {(["master", "forecasted", "interchanged", "remaining"] as ViewType[]).map(
+            (type) => (
+              <button
+                key={type}
+                onClick={() => setViewType(type)}
+                className={`rounded-lg px-4 py-2 text-sm ${
+                  viewType === type
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {type === "master"
+                  ? "Master (All Data)"
+                  : type === "forecasted"
+                  ? 'Forecasted (FC="Y")'
+                  : type === "interchanged"
+                  ? 'Interchanged (IC="Y")'
+                  : "Remaining"}
+              </button>
+            )
+          )}
           <button
-            onClick={() => setViewType("master")}
-            className={`rounded-lg px-4 py-2 text-sm  ${viewType === "master" ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            onClick={downloadPDF}
+            disabled={viewType !== "master"}
+            className={`rounded-lg px-4 py-2 text-sm ${
+              viewType === "master"
+                ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
-            Master (All Data)
-          </button>
-          <button
-            onClick={() => setViewType("forecasted")}
-            className={`rounded-lg px-4 py-2 text-sm ${viewType === "forecasted" ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            Forecasted (FC="Y")
-          </button>
-          <button
-            onClick={() => setViewType("interchanged")}
-            className={`rounded-lg px-4 py-2 text-sm ${viewType === "interchanged" ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            Interchanged (IC="Y")
-          </button>
-          <button
-            onClick={() => setViewType("remaining")}
-            className={`rounded-lg px-4 py-2 text-sm ${viewType === "remaining" ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            Remaining
+            Download Master as PDF
           </button>
         </div>
 
+        {/* Data Section */}
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
@@ -113,9 +169,10 @@ const Summary = () => {
         ) : (
           <div className="space-y-6">
             {sections.map((section, idx) => {
-              const headers = section.rows.length > 0
-                ? Object.keys(section.rows[0]).filter(col => col !== "id")
-                : [];
+              const headers =
+                section.rows.length > 0
+                  ? Object.keys(section.rows[0]).filter((col) => col !== "id")
+                  : [];
 
               return (
                 <div key={idx} className="rounded-lg border border-gray-200">
@@ -129,7 +186,6 @@ const Summary = () => {
                           {headers.map((header) => (
                             <th
                               key={header}
-                              scope="col"
                               className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                             >
                               {header.replace(/_/g, " ")}
@@ -139,16 +195,20 @@ const Summary = () => {
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                         {section.rows.map((row) => (
-                          <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                          <tr
+                            key={row.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-900"
+                          >
                             {headers.map((header) => (
                               <td
                                 key={`${row.id}-${header}`}
-                                className={`whitespace-nowrap px-4 py-2 text-sm ${row['ic'] === 'Y'
-                                    ? 'text-green-600 font-medium'
-                                    : row['fc'] === 'Y'
-                                      ? 'text-blue-600 font-medium'
-                                      : 'text-gray-500'
-                                  }`}
+                                className={`whitespace-nowrap px-4 py-2 text-sm ${
+                                  row["ic"] === "Y"
+                                    ? "text-green-600 font-medium"
+                                    : row["fc"] === "Y"
+                                    ? "text-blue-600 font-medium"
+                                    : "text-gray-500"
+                                }`}
                               >
                                 {row[header] || "-"}
                               </td>
