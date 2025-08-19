@@ -4,7 +4,7 @@ import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; // ✅ direct import
-import "./styles/print-pdf.css";
+//import "./styles/printpdf.css";
 
 
 interface SummaryData {
@@ -58,48 +58,52 @@ const Summary = () => {
       setLoading(false);
     }
   };
+const downloadPDF = () => {
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "normal"); // Explicitly set font family and style
 
-  const downloadPDF = () => {
-    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-    doc.setFontSize(16);
-    //doc.text("Master Summary", 40, 40);
+  sections.forEach((section, index) => {
+    const headers =
+      section.rows.length > 0
+        ? Object.keys(section.rows[0]).filter((col) => col !== "id")
+        : [];
 
-    sections.forEach((section, index) => {
-      const headers =
-        section.rows.length > 0
-          ? Object.keys(section.rows[0]).filter((col) => col !== "id")
-          : [];
+    const tableData = section.rows.map((row) =>
+      headers.map((header) => row[header] || "-")
+    );
 
-      const tableData = section.rows.map((row) =>
-        headers.map((header) => row[header] || "-")
-      );
+    // Add section title (station name) before the table
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold"); // Set bold for titles
+    const titleY = index === 0 ? 40 : (doc as any).lastAutoTable.finalY + 40;
+    doc.text(
+      section.table.replace(/_/g, " → ").toUpperCase(),
+      40,
+      titleY
+    );
 
-      autoTable(doc, {
-        head: [headers.map((header) => header.replace(/_/g, " "))],
-        body: tableData,
-        startY: index === 0 ? 60 : (doc as any).lastAutoTable.finalY + 40,
-        theme: "grid",
-        margin: { left: 40, right: 40 },
-        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-        styles: {
-          fontSize: 9,
-          cellPadding: 4,
-          overflow: "linebreak",
-          halign: "left",
-          valign: "middle",
-        },
-      });
-
-      doc.setFontSize(12);
-      doc.text(
-        section.table.replace(/_/g, " → ").toUpperCase(),
-        40,
-        (doc as any).lastAutoTable.finalY + 25
-      );
+    // Render the table below the title
+    autoTable(doc, {
+      head: [headers.map((header) => header.replace(/_/g, " "))],
+      body: tableData,
+      startY: titleY + 20, // Start table 20pt below the title
+      theme: "grid",
+      margin: { left: 40, right: 40 },
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
+      styles: {
+        fontSize: 9,
+        cellPadding: 4,
+        overflow: "linebreak",
+        halign: "left",
+        valign: "middle",
+      },
     });
+    doc.setFont("helvetica", "normal"); // Reset to normal for next iteration
+  });
 
-    doc.save("master_summary.pdf");
-  };
+  doc.save("master_summary.pdf");
+};
 
   useEffect(() => {
     fetchSummary(viewType);
