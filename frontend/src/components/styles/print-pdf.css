@@ -1,0 +1,84 @@
+/* src/styles/print-pdf.css */
+
+/* Only applies when printing / saving as PDF */
+@media print {
+  /* Force A4 landscape and nice margins */
+  @page {
+    size: A4 landscape;
+    margin: 12mm 10mm;
+  }
+
+  /* Ensure colors are kept */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
+  /* Hide UI controls (buttons, filters) while printing */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Container to avoid awkward page breaks per section */
+  .pdf-container {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 12mm;
+  }
+
+  .section-title {
+    font-weight: 700;
+    font-size: 12pt;
+    line-height: 1.2;
+    margin: 8mm 0 3mm;
+  }
+
+  /* Table styling for PDF */
+  table.pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;        /* keeps columns tidy for wide tables */
+    font-size: 9pt;
+  }
+
+  .pdf-table th,
+  .pdf-table td {
+    border: 0.5pt solid #cbd5e1; /* slate-300 */
+    padding: 4pt 6pt;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;         /* keeps rows thin; remove if you prefer wrapping */
+  }
+
+  .pdf-table th {
+    background: #3b82f6;         /* tailwind blue-500 */
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  /* Zebra rows (kept in print) */
+  .pdf-table tr:nth-child(even) td {
+    background: #f8fafc;         /* slate-50 */
+  }
+
+  /* Optional color hints for flags */
+  .flag-ic {
+    color: #16a34a;              /* green-600 */
+    font-weight: 600;
+  }
+  .flag-fc {
+    color: #2563eb;              /* blue-600 */
+    font-weight: 600;
+  }
+
+  /* Help the browser know where to break if needed */
+  .page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+  .page-break-after {
+    page-break-after: always;
+    break-after: page;
+  }
+}

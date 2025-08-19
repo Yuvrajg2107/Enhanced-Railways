@@ -4,6 +4,8 @@ import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; // ✅ direct import
+import "./styles/print-pdf.css";
+
 
 interface SummaryData {
   table: string;
@@ -60,7 +62,7 @@ const Summary = () => {
   const downloadPDF = () => {
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     doc.setFontSize(16);
-    doc.text("Master Summary", 40, 40);
+    //doc.text("Master Summary", 40, 40);
 
     sections.forEach((section, index) => {
       const headers =
